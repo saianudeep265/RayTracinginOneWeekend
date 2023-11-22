@@ -10,5 +10,6 @@ How to run:
 3. Image will be saved to image.ppm
 
 Image of sphere:
+
 ![image](https://github.com/saianudeep265/RayTracinginOneWeekend/assets/71748114/41fe89b7-3138-4a83-858b-7445c4939426)
 
