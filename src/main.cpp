@@ -12,18 +12,27 @@
 
 #include <iostream>
 
-bool hit_sphere(const Vec3f& center, float radius, const Ray& r) {
-	auto oc = r.origin() - center;
-	auto a = r.direction().dot(r.direction());
-	auto b = 2.0f * oc.dot(r.direction());
-	auto c = oc.dot(oc) - radius * radius;
-	float discriminant = b * b - 4 * a * c;
-	return discriminant >= 0;
+float hit_sphere(const Vec3f& center, float radius, const Ray& r) {
+	float t(-1.0f);
+	auto oc = center - r.origin();
+	auto a = r.direction().getSquaredLength();
+	auto h = oc.dot(r.direction());
+	auto c = oc.getSquaredLength() - radius * radius;
+	float discriminant = h * h - a * c;
+	if (!(discriminant < 0.0f))
+	{
+		t = (h - std::sqrtf(discriminant)) / a;
+	}
+	return t;
 }
 
 Color ray_color(const Ray& r) {
-	if (hit_sphere(Vec3f(0.0f, 0.0f, -1.0f), 0.5, r))
-		return Color(1.0f, 0.0f, 0.0f);
+	auto t = hit_sphere(Vec3f(0.0f, 0.0f, -1.0f), 0.5, r);
+	if (t > 0.0f)
+	{
+		auto n = unit_vector(r.at(t) - Vec3f(0.0f, 0.0f, -1.0f));
+		return 0.5f * Color(n.X() + 1.0f, n.Y() + 1.0f, n.Z() + 1.0f);
+	}
 
 	Vec3f unit_direction = unit_vector(r.direction());
 	auto a = 0.5f * (unit_direction.Y() + 1.0f);
