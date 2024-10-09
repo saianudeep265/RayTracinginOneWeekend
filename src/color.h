@@ -6,17 +6,14 @@
 
 #pragma once
 
-#include "vec3.h"
-
 #include <iostream>
 
-class Color : public vec3 {
-public:
-	Color(float dVecx = 0.0f, float dVecy = 0.0f, float dVecz = 0.0f) : vec3(dVecx , dVecy , dVecz) {}
+#include "vec3.h"
 
-	void write_color(std::ostream& out) {
-		out << static_cast<int>(255.999 * m_dVec3[0]) << ' '
-			<< static_cast<int>(255.999 * m_dVec3[1]) << ' '
-			<< static_cast<int>(255.999 * m_dVec3[2]) << '\n';
-	}
-};
+typedef Vec3<float> Color;
+
+void write_color(std::ostream& out, const Color& v) {
+	out << static_cast<int>(255.999 * v.X()) << ' '
+		<< static_cast<int>(255.999 * v.Y()) << ' '
+		<< static_cast<int>(255.999 * v.Z()) << '\n';
+}

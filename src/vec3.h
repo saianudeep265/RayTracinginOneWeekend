@@ -8,103 +8,123 @@
 
 #include <iostream>
 #include <cmath>
-#include <array>
 
-class vec3 {
+template<typename T>
+class Vec3
+{
 public:
-	vec3(float dVecx = 0.0f, float dVecy = 0.0f, float dVecz = 0.0f) : m_dVec3{ dVecx , dVecy , dVecz } {}
+	Vec3(T x_ = 0, T y_ = 0, T z_ = 0) : x(x_), y(y_), z(z_) {}
 
-	virtual ~vec3() = default;
+	T X() const { return x; }
+	T Y() const { return y; }
+	T Z() const { return z; }
 
-	float x() const {
-		return m_dVec3[0];
-	}
+	inline Vec3<T> operator-() const { return Vec3<T>(-x, -y, -z); }
 
-	float y() const {
-		return m_dVec3[1];
-	}
+	inline Vec3<T>& operator+=(const Vec3<T>& v)
+	{
+		x += v.x;
+		y += v.y;
+		z += v.z;
 
-	float z() const {
-		return m_dVec3[2];
-	}
-
-	vec3 operator-() const {
-		return vec3(-m_dVec3[0], -m_dVec3[1], -m_dVec3[2]);
-	}
-
-	vec3& operator+=(const vec3& v) {
-		m_dVec3[0] += v.m_dVec3[0];
-		m_dVec3[1] += v.m_dVec3[1];
-		m_dVec3[2] += v.m_dVec3[2];
 		return *this;
 	}
 
-	vec3& operator*=(double val) {
-		m_dVec3[0] *= val;
-		m_dVec3[1] *= val;
-		m_dVec3[2] *= val;
+	template<typename U>
+	inline Vec3<T>& operator*=(U val)
+	{
+		x *= val;
+		y *= val;
+		z *= val;
+
 		return *this;
 	}
 
-	vec3& operator/=(double val) {
+	template<typename U>
+	inline Vec3<T>& operator/=(U val)
+	{
 		return *this *= 1 / val;
 	}
 
-	float length_squared() const {
-		return m_dVec3[0] * m_dVec3[0] + m_dVec3[1] * m_dVec3[1] + m_dVec3[2] * m_dVec3[2];
+	inline auto length() const
+	{
+		return std::sqrt(getSquaredLength());
 	}
 
-	float length() const {
-		return std::sqrt(length_squared());
+	inline T getSquaredLength() const
+	{
+		return x * x + y * y + z * z;
+	}
+
+	inline T dot(const Vec3<T>& v) const
+	{
+		return x * v.x + y * v.y + z * v.z;
+	}
+
+	inline Vec3<T> cross(const Vec3<T>& v) const
+	{
+		return Vec3<T>(y * v.z - z * v.y,
+			z * v.x - x * v.z,
+			x * v.y - y * v.x);
 	}
 
 protected:
-	std::array<float, 3> m_dVec3;
+	T x;
+	T y;
+	T z;
 };
 
-typedef vec3 point3;
+typedef Vec3<float> Vec3f;
 
-std::ostream& operator<<(std::ostream& out, const vec3& v) {
-	return out << v.x() << ' ' << v.y() << ' ' << v.z();
+template<typename T>
+inline Vec3<T> operator+(const Vec3<T>& v1, const Vec3<T>& v2)
+{
+	return Vec3<T>(v1.X() + v2.X(), v1.Y() + v2.Y(), v1.Z() + v2.Z());
 }
 
-vec3 operator+(const vec3& v1, const vec3& v2) {
-	return vec3(v1.x() + v2.x(), v1.y() + v2.y(), v1.z() + v2.z());
+template<typename T>
+inline Vec3<T> operator-(const Vec3<T>& v1, const Vec3<T>& v2)
+{
+	return Vec3<T>(v1.X() - v2.X(), v1.Y() - v2.Y(), v1.Z() - v2.Z());
 }
 
-vec3 operator-(const vec3& v1, const vec3& v2) {
-	return vec3(v1.x() - v2.x(), v1.y() - v2.y(), v1.z() - v2.z());
+template<typename T>
+inline Vec3<T> operator*(const Vec3<T>& v1, const Vec3<T>& v2)
+{
+	return Vec3<T>(v1.X() * v2.X(), v1.Y() * v2.Y(), v1.Z() * v2.Z());
 }
 
-vec3 operator*(const vec3& v1, const vec3& v2) {
-	return vec3(v1.x() * v2.x(), v1.y() * v2.y(), v1.z() * v2.z());
+template<typename T>
+inline Vec3<T> operator/(const Vec3<T>& v1, const Vec3<T>& v2)
+{
+	return Vec3<T>(v1.X() / v2.X(), v1.Y() / v2.Y(), v1.Z() / v2.Z());
 }
 
-vec3 operator*(const vec3& v1, float val) {
-	return vec3(v1.x() * val, v1.y() * val, v1.z() * val);
+template<typename T, typename U>
+inline Vec3<T> operator*(const Vec3<T>& v, U val)
+{
+	return Vec3<T>(v.X() * val, v.Y() * val, v.Z() * val);
 }
 
-vec3 operator*(float val, const vec3& v1) {
-	return v1 * val;
+template<typename T, typename U>
+inline Vec3<T> operator/(const Vec3<T>& v, U val)
+{
+	return v * (1 / val);
 }
 
-vec3 operator/(const vec3& v1, float val) {
-	return (1 / val) * v1;
+template<typename T, typename U>
+inline Vec3<T> operator*(U val, const Vec3<T>& v)
+{
+	return v * val;
 }
 
-vec3 unit_vector(vec3 v) {
+template<typename T, typename U>
+inline Vec3<T> operator/(U val, const Vec3<T>& v)
+{
+	return v * (1 / val);
+}
+
+template<typename T>
+inline Vec3<T> unit_vector(const Vec3<T>& v) {
 	return v / v.length();
-}
-
-float dot(const vec3& v1, const vec3& v2) {
-	return v1.x() * v2.x() +
-		   v1.y() * v2.y() +
-		   v1.z() * v2.z();
-}
-
-vec3 cross(const vec3& v1, const vec3& v2) {
-	return vec3(v1.y() * v2.z() - v1.z() * v2.y(),
-				v1.z() * v2.x() - v1.x() * v2.z(),
-				v1.x() * v2.y() - v1.y() * v2.x()
-				);
 }
