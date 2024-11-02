@@ -6,32 +6,18 @@
 
 #pragma once
 
-#include "vec3.h"
-#include "color.h"
-#include "Ray.h"
+#include "Utility.h"
+#include "Hittable.h"
+#include "HittableList.h"
+#include "Sphere.h"
+#include "Camera.h"
+#include "Interval.h"
 
-#include <iostream>
-
-float hit_sphere(const Vec3f& center, float radius, const Ray& r) {
-	float t(-1.0f);
-	auto oc = center - r.origin();
-	auto a = r.direction().getSquaredLength();
-	auto h = oc.dot(r.direction());
-	auto c = oc.getSquaredLength() - radius * radius;
-	float discriminant = h * h - a * c;
-	if (!(discriminant < 0.0f))
+Color ray_color(const Ray& r, const Hittable& world) {
+	HitRecord record;
+	if (world.Hit(r, Interval(0, infinity), record))
 	{
-		t = (h - std::sqrtf(discriminant)) / a;
-	}
-	return t;
-}
-
-Color ray_color(const Ray& r) {
-	auto t = hit_sphere(Vec3f(0.0f, 0.0f, -1.0f), 0.5, r);
-	if (t > 0.0f)
-	{
-		auto n = unit_vector(r.at(t) - Vec3f(0.0f, 0.0f, -1.0f));
-		return 0.5f * Color(n.X() + 1.0f, n.Y() + 1.0f, n.Z() + 1.0f);
+		return 0.5 * (record.normal + Color(1, 1, 1));
 	}
 
 	Vec3f unit_direction = unit_vector(r.direction());
@@ -45,16 +31,16 @@ int main() {
 	const float aspect_ratio = 16.0f / 9.0f;
 	const int iImageHeight = 400;
 	const int iImageWidth = static_cast<int>(iImageHeight * aspect_ratio);
+	const int samples_per_pixel = 100;
 
 	// camera
-	const float viewport_height = 2.0f;
-	const float viewport_width = viewport_height * aspect_ratio;
-	const float focal_length = 1.0f;
+	Camera camera;
 
-	const Vec3f origin(0.0f, 0.0f, 0.0f);
-	const Vec3f horizontal(viewport_width, 0.0f, 0.0f);
-	const Vec3f vertical(0.0f, viewport_height, 0.0f);
-	const Vec3f lower_left_corner = origin - (horizontal / 2.0f) - (vertical / 2.0f) - Vec3f(0.0f, 0.0f, focal_length);
+	// World
+	HittableList world;
+
+	world.add(std::make_shared<Sphere>(Point3f(0, 0, -1), 0.5));
+	world.add(std::make_shared<Sphere>(Point3f(0, -100.5, -1), 100));
 
 	// Render
 	std::cout << "P3\n" << iImageWidth << ' ' << iImageHeight << "\n255\n";
@@ -62,10 +48,15 @@ int main() {
 	for (int j = iImageHeight - 1; j >= 0; --j) {
 		std::cerr << "\rScanlines remaining: " << j << ' ' << std::flush;
 		for (int i = 0; i < iImageWidth; ++i) {
-			float u = float(i) / float(iImageWidth - 1);
-			float v = float(j) / float(iImageHeight - 1);
-			Ray ray(origin, lower_left_corner + u * horizontal + v * vertical - origin);
-			write_color(std::cout, ray_color(ray));
+			Color pixel_color(0, 0, 0);
+			for (int s = 0; s < samples_per_pixel; ++s)
+			{
+				float u = (i + random_float()) / (iImageWidth - 1);
+				float v = (j + random_float()) / (iImageHeight - 1);
+				Ray ray = camera.get_ray(u, v);
+				pixel_color += ray_color(ray, world);
+			}
+			write_color(std::cout, pixel_color, samples_per_pixel);
 		}
 	}
 	std::cerr << "\nDone\n";

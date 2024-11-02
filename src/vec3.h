@@ -46,6 +46,22 @@ public:
 		return *this *= 1 / val;
 	}
 
+	inline T& operator[](int index)
+	{
+		if (index == 0) return x;
+		if (index == 1) return y;
+		if (index == 2) return z;
+		return x;
+	}
+
+	inline T operator[](int index) const
+	{
+		if (index == 0) return x;
+		if (index == 1) return y;
+		if (index == 2) return z;
+		return x;
+	}
+
 	inline auto length() const
 	{
 		return std::sqrt(getSquaredLength());
@@ -75,6 +91,7 @@ protected:
 };
 
 typedef Vec3<float> Vec3f;
+typedef Vec3<float> Point3f;
 
 template<typename T>
 inline Vec3<T> operator+(const Vec3<T>& v1, const Vec3<T>& v2)
@@ -127,4 +144,10 @@ inline Vec3<T> operator/(U val, const Vec3<T>& v)
 template<typename T>
 inline Vec3<T> unit_vector(const Vec3<T>& v) {
 	return v / v.length();
+}
+
+template<typename T>
+inline T dot(const Vec3<T>& v1, const Vec3<T>& v2)
+{
+	return v1.X() * v2.X() + v1.Y() * v2.Y() + v1.Z() * v2.Z();
 }
